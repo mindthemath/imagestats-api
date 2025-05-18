@@ -1,11 +1,13 @@
 import json
 import os
+import sys
 
 import requests
 
 # Path to an image file for testing
 # Replace with a path to your own image file
-image_path = os.path.expanduser("~/Pictures/NJH/20211001_113221.jpg")
+filename = sys.argv[1] if len(sys.argv) > 1 else "snowman.png"
+image_path = os.path.expanduser(filename)
 
 # Check if the file exists
 if not os.path.exists(image_path):

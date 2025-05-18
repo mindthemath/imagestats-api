@@ -49,6 +49,37 @@ def resize_for_processing(image):
     return image
 
 
+def process_gps_info(gps_info):
+    """
+    Process GPS information to determine if it contains valid data.
+    Returns None if the GPS data is empty or contains only default values.
+    Otherwise returns the original GPS data.
+    """
+    # Initialize as invalid by default
+    has_valid_gps = False
+
+    # Check if GPSInfo is a string representation (common due to serialization)
+    if isinstance(gps_info, str):
+        # Check for patterns indicating default/empty values
+        if (
+            "(0.0, 0.0, 0.0)" in gps_info
+            or "'1970:01:01'" in gps_info
+            or "0.0" in gps_info
+        ):
+            # These patterns suggest default or empty values
+            pass
+        else:
+            # No default patterns found - likely has actual data
+            has_valid_gps = True
+    elif isinstance(gps_info, dict):
+        # For dictionary representation, check for actual coordinate values
+        coordinates = gps_info.get(2, (0, 0, 0))  # 2 is the tag for GPSLatitude
+        if coordinates != (0, 0, 0):
+            has_valid_gps = True
+
+    return gps_info if has_valid_gps else None
+
+
 def get_exif_data(image):
     """Extract EXIF data from image and handle serialization issues"""
     exif_data = {}
@@ -78,6 +109,18 @@ def get_exif_data(image):
                             exif_data[tag_name] = "Unable to serialize value"
     except Exception as e:
         logger.warning(f"Error extracting EXIF data: {e}")
+
+    # Process GPS information if present
+    if "GPSInfo" in exif_data:
+        processed_gps = process_gps_info(exif_data["GPSInfo"])
+        if processed_gps is None:
+            # Remove invalid GPS data
+            del exif_data["GPSInfo"]
+            logger.info("Filtered out empty/default GPS information")
+        else:
+            # Keep the valid GPS data
+            exif_data["GPSInfo"] = processed_gps
+
     return exif_data
 
 
@@ -159,8 +202,15 @@ def find_dominant_color(valid_pixels):
     return dominant_rgb
 
 
-def get_image_colors(image, averaging_method="arithmetic"):
-    """Extract color information from image, ignoring alpha/masked pixels"""
+def prepare_image_for_color_analysis(image):
+    """
+    Prepare image for color analysis by creating a thumbnail and converting to RGBA.
+    Also extracts valid (non-transparent) pixels.
+
+    Returns:
+        valid_pixels: Array of non-transparent pixel values
+        or None if no valid pixels found
+    """
     # Create a thumbnail for processing if image is large
     process_image = resize_for_processing(image)
 
@@ -180,24 +230,74 @@ def get_image_colors(image, averaging_method="arithmetic"):
     if len(valid_pixels) == 0:
         return None
 
-    # Calculate average color using specified method
+    return valid_pixels
+
+
+def get_average_color(valid_pixels, averaging_method="arithmetic"):
+    """
+    Calculate the average color of an image using the specified method.
+
+    Args:
+        valid_pixels: Array of non-transparent pixel values
+        averaging_method: The method to use for averaging ("arithmetic", "harmonic", or "geometric")
+
+    Returns:
+        Dictionary containing RGB values and hex code for the average color
+    """
     avg_color = calculate_color_average(valid_pixels, averaging_method)
     avg_hex = rgb_to_hex(avg_color)
 
-    # Find dominant color
+    return {
+        "rgb": avg_color.tolist(),  # Float values in range [0,1]
+        "hex": avg_hex,
+        "method": averaging_method,
+    }
+
+
+def get_dominant_color(valid_pixels):
+    """
+    Find the dominant color in an image using HSV clustering.
+
+    Args:
+        valid_pixels: Array of non-transparent pixel values
+
+    Returns:
+        Dictionary containing RGB values and hex code for the dominant color
+    """
     dominant_rgb = find_dominant_color(valid_pixels)
     dominant_hex = rgb_to_hex(dominant_rgb)
 
     return {
-        "avg_color": {
-            "rgb": avg_color.tolist(),  # Float values in range [0,1]
-            "hex": avg_hex,
-            "method": averaging_method,
-        },
-        "dominant_color": {
-            "rgb": dominant_rgb.tolist(),  # Float values in range [0,1]
-            "hex": dominant_hex,
-        },
+        "rgb": dominant_rgb.tolist(),  # Float values in range [0,1]
+        "hex": dominant_hex,
+    }
+
+
+def get_image_colors(image, averaging_method="arithmetic"):
+    """
+    Extract color information from image, including average and dominant colors.
+    This function can later be converted to use async operations for parallel processing.
+
+    Args:
+        image: PIL Image object
+        averaging_method: Method to use for calculating average color
+
+    Returns:
+        Dictionary containing average and dominant color information,
+        or None if no valid pixels were found
+    """
+    valid_pixels = prepare_image_for_color_analysis(image)
+
+    if valid_pixels is None:
+        return None
+
+    # Calculate average and dominant colors
+    avg_color_data = get_average_color(valid_pixels, averaging_method)
+    dominant_color_data = get_dominant_color(valid_pixels)
+
+    return {
+        "avg_color": avg_color_data,
+        "dominant_color": dominant_color_data,
     }
 
 
