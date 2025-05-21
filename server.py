@@ -13,7 +13,7 @@ from PIL import ExifTags, Image
 # Environment configurations
 PORT = int(os.environ.get("PORT", "8001"))
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-NUM_API_SERVERS = int(os.environ.get("NUM_API_SERVERS", "1"))
+WORKERS_PER_DEVICE = int(os.environ.get("WORKERS_PER_DEVICE", "1"))
 AVERAGING_METHOD = os.environ.get("AVERAGING_METHOD", "arithmetic")
 
 # Set up logging
@@ -340,7 +340,7 @@ if __name__ == "__main__":
         accelerator="cpu",
         track_requests=True,
         api_path="/stats",
-        workers_per_device=NUM_API_SERVERS,
+        workers_per_device=WORKERS_PER_DEVICE,
     )
     server.run(
         port=PORT,
