@@ -3,7 +3,7 @@ name = "imagestats-api"
 version = "0.0.1"
 description = "Extract statistics (exif and color data) from images"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = [
     "litserve>=0.2.10",
     "numpy>=2.2.6",
