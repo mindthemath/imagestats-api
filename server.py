@@ -127,21 +127,6 @@ def calculate_arithmetic_mean(valid_pixels):
     return valid_pixels[:, :3].mean(axis=0) / 255.0
 
 
-def calculate_harmonic_mean(valid_pixels):
-    """Calculate harmonic mean of valid pixels"""
-    # Convert to float and handle zeros to prevent division by zero
-    rgb_values = valid_pixels[:, :3].astype(float)
-    # Add small epsilon to prevent division by zero
-    eps = 1e-8
-    rgb_values = np.maximum(rgb_values, eps)
-
-    # Calculate harmonic mean for each channel
-    reciprocal_mean = np.mean(1.0 / rgb_values, axis=0)
-    harmonic_mean = 1.0 / reciprocal_mean
-
-    return harmonic_mean / 255.0
-
-
 def calculate_geometric_mean(valid_pixels):
     """Calculate geometric mean of valid pixels"""
     # Convert to float and handle zeros
@@ -160,11 +145,9 @@ def calculate_geometric_mean(valid_pixels):
 
 def calculate_color_average(valid_pixels, method="arithmetic"):
     """Calculate color average based on specified method"""
-    if method == "harmonic":
-        return calculate_harmonic_mean(valid_pixels)
-    elif method == "geometric":
+    if method == "geometric":
         return calculate_geometric_mean(valid_pixels)
-    else:  # Default to arithmetic
+    else:
         return calculate_arithmetic_mean(valid_pixels)
 
 
