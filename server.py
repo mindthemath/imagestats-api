@@ -11,8 +11,9 @@ import requests
 from PIL import ExifTags, Image
 
 # Environment configurations
-PORT = int(os.environ.get("PORT", "8001"))
+PORT = int(os.environ.get("PORT", "8010"))
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+NUM_API_SERVERS = int(os.environ.get("NUM_API_SERVERS", "1"))
 WORKERS_PER_DEVICE = int(os.environ.get("WORKERS_PER_DEVICE", "1"))
 AVERAGING_METHOD = os.environ.get("AVERAGING_METHOD", "arithmetic")
 
@@ -346,4 +347,6 @@ if __name__ == "__main__":
         port=PORT,
         host="0.0.0.0",
         log_level=LOG_LEVEL.lower(),
+        num_api_servers=NUM_API_SERVERS,
+        generate_client_file=False,
     )

@@ -20,7 +20,7 @@ files = {"content": open(image_path, "rb")}
 
 # Send the request to the API
 try:
-    response = requests.post("http://127.0.0.1:8001/stats", files=files)
+    response = requests.post("http://127.0.0.1:8010/stats", files=files)
 
     # Print the status code and response
     print(f"Status: {response.status_code}")
