@@ -16,31 +16,28 @@ LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 NUM_API_SERVERS = int(os.environ.get("NUM_API_SERVERS", "1"))
 WORKERS_PER_DEVICE = int(os.environ.get("WORKERS_PER_DEVICE", "1"))
 AVERAGING_METHOD = os.environ.get("AVERAGING_METHOD", "arithmetic")
+THUMBNAIL_SIZE = int(os.environ.get("THUMBNAIL_SIZE", "512"))
 
-# Set up logging
 logging.basicConfig(
     level=getattr(logging, LOG_LEVEL.upper()),
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
-# Maximum size for thumbnail processing
-MAX_THUMB_SIZE = 512
-
 
 def resize_for_processing(image):
     """Create a thumbnail if image is too large"""
     # Check if resizing is needed
-    if max(image.size) > MAX_THUMB_SIZE:
+    if max(image.size) > THUMBNAIL_SIZE:
         logger.info(f"Resizing large image from {image.size} for color processing")
         # Calculate proportional height
         width, height = image.size
         if width > height:
-            new_width = MAX_THUMB_SIZE
-            new_height = int(height * (MAX_THUMB_SIZE / width))
+            new_width = THUMBNAIL_SIZE
+            new_height = int(height * (THUMBNAIL_SIZE / width))
         else:
-            new_height = MAX_THUMB_SIZE
-            new_width = int(width * (MAX_THUMB_SIZE / height))
+            new_height = THUMBNAIL_SIZE
+            new_width = int(width * (THUMBNAIL_SIZE / height))
 
         # Create a thumbnail
         thumb = image.copy()
