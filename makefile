@@ -14,7 +14,7 @@ curl-test: snowman.png
 	curl -X POST -F "content=@snowman.png" http://127.0.0.1:8010/stats | jq
 
 client-test:
-	uv run client.py
+	uv run client.py | jq
 
 requirements.txt: pyproject.toml
 	uv pip compile pyproject.toml -o requirements.txt
