@@ -13,8 +13,11 @@ client-test:
 requirements.txt: pyproject.toml
 	uv pip compile pyproject.toml -o requirements.txt
 
+push: Dockerfile requirements.txt
+	docker buildx build --platform linux/amd64,linux/arm64 -t mindthemath/imagestats-api:latest . --push
+
 build: Dockerfile requirements.txt
-	docker buildx build --platform linux/amd64,linux/arm64 -t imagestats-api .
+	docker build -t mindthemath/imagestats-api:latest .
 
 docker-run: build
-	docker run --rm -ti -p 8010:8010 imagestats-api
+	docker run --rm -ti -p 8010:8010 mindthemath/imagestats-api:latest
