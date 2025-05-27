@@ -1,6 +1,12 @@
 run:
 	uv run server.py
 
+lint:
+	uvx black .
+	uvx isort --profile black .
+	uvx ruff check .
+	uvx ty check
+
 snowman.png:
 	curl -fsSL https://huggingface.co/microsoft/kosmos-2-patch14-224/resolve/main/snowman.png -o snowman.png
 
