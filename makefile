@@ -20,4 +20,4 @@ build: Dockerfile requirements.txt
 	docker build -t mindthemath/imagestats-api:latest .
 
 docker-run: build
-	docker run --rm -ti -p 8010:8010 mindthemath/imagestats-api:latest
+	docker run --rm -ti -p 8010:8010 -e WORKERS_PER_DEVICE=8 mindthemath/imagestats-api:latest
