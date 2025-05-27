@@ -44,7 +44,7 @@ def resize_for_processing(image):
 
         # Create a thumbnail
         thumb = image.copy()
-        thumb.thumbnail((new_width, new_height), Image.LANCZOS)
+        thumb.thumbnail((new_width, new_height), Image.Resampling.LANCZOS)
         return thumb
 
     return image
@@ -106,8 +106,8 @@ def get_exif_data(image):
                         # Convert problematic types to string representation
                         try:
                             exif_data[tag_name] = str(value)
-                        except:
-                            exif_data[tag_name] = "Unable to serialize value"
+                        except Exception as e:
+                            exif_data[tag_name] = f"Unable to serialize value: {e}"
     except Exception as e:
         logger.warning(f"Error extracting EXIF data: {e}")
 
@@ -305,7 +305,9 @@ def get_image_colors(image, averaging_method="arithmetic"):
 class ImageStatsAPI(ls.LitAPI):
     def setup(self, device):
         if device != "cpu":
-            raise ValueError("ImageStatsAPI does not benefit from hardware acceleration. Use 'cpu'.")
+            raise ValueError(
+                "ImageStatsAPI does not benefit from hardware acceleration. Use 'cpu'."
+            )
 
     def decode_request(self, request):
         file_obj = request["content"]
@@ -313,12 +315,16 @@ class ImageStatsAPI(ls.LitAPI):
         if isinstance(file_obj, str) and "http" in file_obj:
             file_obj = file_obj.replace("localhost:3210", "backend:3210")  # HACK
             image = Image.open(requests.get(file_obj, stream=True).raw)
-            logger.info("Processing URL input.")
+            logger.info(
+                f"Processing URL input using {AVERAGING_METHOD} averaging method."
+            )
             return image
         try:
             file_bytes = file_obj.file.read()
             image = Image.open(BytesIO(file_bytes))
-            logger.info("Processing file input.")
+            logger.info(
+                f"Processing file input using {AVERAGING_METHOD} averaging method."
+            )
             return image
         except AttributeError:
             logger.warning("Failed to process request")
@@ -327,8 +333,6 @@ class ImageStatsAPI(ls.LitAPI):
                 file_obj.file.close()
 
     def predict(self, image):
-        logger.info(f"Processing image using {AVERAGING_METHOD} averaging method.")
-
         exif_data = get_exif_data(image)
         color_data = get_image_colors(image, AVERAGING_METHOD)
 
