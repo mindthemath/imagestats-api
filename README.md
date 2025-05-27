@@ -10,7 +10,6 @@ This project provides an API to extract statistical information from images, inc
 *   **Color Analysis**:
     *   **Average Color**: Calculates the average color of an image. Supports multiple averaging methods:
         *   `arithmetic` (default)
-        *   `harmonic`
         *   `geometric`
         (Configurable via the `AVERAGING_METHOD` environment variable).
     *   **Dominant Color**: Identifies the most prominent color in an image using HSV color space clustering.
