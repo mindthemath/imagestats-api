@@ -20,7 +20,10 @@ requirements.txt: pyproject.toml
 	uv pip compile pyproject.toml -o requirements.txt
 
 push: Dockerfile requirements.txt
-	docker buildx build --platform linux/amd64,linux/arm64 -t mindthemath/imagestats-api:latest . --push
+	docker buildx build \
+		--platform linux/amd64,linux/arm64 \
+		-t mindthemath/imagestats-api:latest \
+		. --push
 
 build: Dockerfile requirements.txt
 	docker build -t mindthemath/imagestats-api:latest .
